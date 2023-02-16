@@ -28,4 +28,4 @@ This backend is built using;
 
 ### Frontend code
 
-<a href="https://github.com/annoinspace/architrave-frontend">
+Check out the [frontend repository](https://github.com/annoinspace/architrave-frontend) for this project.

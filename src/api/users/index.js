@@ -83,12 +83,40 @@ usersRouter.get("/", jwtAuthMiddleware, async (req, res, next) => {
 usersRouter.get("/me", jwtAuthMiddleware, async (req, res, next) => {
   try {
     if (req.user) {
-      const me = await UsersModel.findById(req.user._id)
-      if (me) {
-        res.send(me)
+      const user = await UsersModel.findById(req.user._id).populate({
+        path: "projects"
+      })
+      if (user) {
+        res.send(user)
       }
     } else {
       createHttpError(404, "user not found")
+    }
+  } catch (error) {
+    next(error)
+  }
+})
+
+usersRouter.put("/me", jwtAuthMiddleware, async (req, res, next) => {
+  try {
+    const { username, email } = req.body
+
+    if (req.user) {
+      const foundUser = await UsersModel.findById(req.user._id)
+
+      // Check if the new username or email already exists in the database with a user that is not me
+      const existingUser = await UsersModel.findOne({
+        $and: [{ _id: { $ne: foundUser._id } }, { $or: [{ username }, { email }] }]
+      })
+      if (existingUser) {
+        const existingField = existingUser.username === username ? "username" : "email"
+        return res.status(400).send({ message: `User with this ${existingField} already exists` })
+      }
+
+      // Update the user with the new data and return the updated user
+      foundUser.set(req.body)
+      const updatedUser = await foundUser.save()
+      res.send(updatedUser)
     }
   } catch (error) {
     next(error)

@@ -10,6 +10,7 @@ import {
   forbiddenErrorHandler
 } from "./errorHandlers.js"
 import usersRouter from "./api/users/index.js"
+import projectsRouter from "./api/projects/index.js"
 
 const server = express()
 const port = process.env.PORT || 3004
@@ -35,6 +36,7 @@ server.use(cors(corsOptions))
 // ---------------- ENDPOINTS ------------------
 
 server.use("/users", usersRouter)
+server.use("/projects", projectsRouter)
 
 // ---------------- ERROR HANDLERS ------------------
 server.use(badRequestHandler) // 400

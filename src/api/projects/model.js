@@ -9,7 +9,7 @@ const ProjectsSchema = new Schema(
     description: { type: String, required: false },
     budget: { type: Number, required: true },
     cushion: { type: Number, required: false },
-    status: { type: String, required: true, enum: ["Planning", "In Progress", "Complete"] },
+    status: { type: String, required: true, enum: ["Planning", "In Progress", "Complete"], default: "Planning" },
     products: [{ type: Schema.Types.ObjectId, ref: "Users.productLibrary" }]
   },
   { timestamps: true }

@@ -1,6 +1,6 @@
 import createHttpError from "http-errors"
 
-export const adminOnlyMiddleware = (req, res, next) => {
+export const AdminOnlyMiddleware = (req, res, next) => {
   if (req.user.role === "Admin") {
     next()
   } else {

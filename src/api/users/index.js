@@ -21,7 +21,7 @@ const cloudinaryUploader = multer({
 
 usersRouter.post("/register", async (req, res, next) => {
   try {
-    const { username, email, displayName, password } = req.body
+    const { username, email, displayName, password, role } = req.body
 
     const existingUser = await UsersModel.findOne({ $or: [{ username }, { email }] })
     if (existingUser) {
@@ -30,9 +30,9 @@ usersRouter.post("/register", async (req, res, next) => {
     }
 
     const newUser = new UsersModel(req.body)
-    const { _id } = await newUser.save()
+    const savedUser = await newUser.save()
 
-    res.status(201).send({ _id })
+    res.status(201).send(savedUser)
   } catch (error) {
     next(error)
   }
@@ -45,7 +45,7 @@ usersRouter.post("/login", async (req, res, next) => {
     const user = await UsersModel.checkCredentials(email, password)
 
     if (user) {
-      const payload = { _id: user._id }
+      const payload = { _id: user._id, role: user.role }
       const accessToken = await createAccessToken(payload)
       res.send({ accessToken })
     } else {

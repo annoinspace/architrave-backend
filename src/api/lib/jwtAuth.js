@@ -12,6 +12,7 @@ export const jwtAuthMiddleware = async (req, res, next) => {
         _id: payload._id,
         role: payload.role
       }
+      console.log("payload", payload)
       next()
     } catch (error) {
       next(createHttpError(401, "Token not valid."))

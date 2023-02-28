@@ -1,15 +1,14 @@
 import mongoose from "mongoose"
 const { Schema, model } = mongoose
-const CommunitySwatchSchema = new Schema(
+const SwatchSchema = new Schema(
   {
-    name: { type: String, required: true },
-    rgb: {
-      r: { type: Number, required: true },
-      g: { type: Number, required: true },
-      b: { type: Number, required: true }
-    },
-    hex: { type: String, required: false }
+    rgbValue: [{ type: Number, required: true }],
+    hexValue: { type: String, required: true },
+    name: { type: String, required: false },
+    baseColor: { type: String, required: true }
   },
-  { timestamps: true }
+  {
+    timestamps: true
+  }
 )
-export default model("CommunitySwatches", CommunitySwatchSchema)
+export default model("Swatches", SwatchSchema)

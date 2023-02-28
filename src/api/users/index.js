@@ -60,14 +60,17 @@ usersRouter.get("/", jwtAuthMiddleware, async (req, res, next) => {
   try {
     let users
     if (req.query.search) {
-      users = await UsersModel.find({
-        $or: [
-          { username: { $regex: req.query.search, $options: "i" } },
-          { email: { $regex: req.query.search, $options: "i" } }
-        ]
-      })
+      users = await UsersModel.find(
+        {
+          $or: [
+            { username: { $regex: req.query.search, $options: "i" } },
+            { email: { $regex: req.query.search, $options: "i" } }
+          ]
+        },
+        { password: 0 }
+      )
     } else {
-      users = await UsersModel.find()
+      users = await UsersModel.find({}, { password: 0 })
     }
 
     if (users) {

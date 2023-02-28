@@ -10,7 +10,8 @@ const UsersSchema = new Schema({
   password: { type: String, required: true },
   colorLibrary: [{ type: String, required: false }],
   productLibrary: [{ type: String, required: false }],
-  projects: [{ type: Schema.Types.ObjectId, ref: "Projects", required: false }]
+  projects: [{ type: Schema.Types.ObjectId, ref: "Projects", required: false }],
+  role: { type: String, enum: ["Guest", "Admin"], default: "Guest", required: true }
 })
 
 UsersSchema.pre("save", async function (next) {

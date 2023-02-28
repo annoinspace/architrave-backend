@@ -11,6 +11,7 @@ import {
 } from "./errorHandlers.js"
 import usersRouter from "./api/users/index.js"
 import projectsRouter from "./api/projects/index.js"
+import adminRouter from "./api/swatches/index.js"
 
 const server = express()
 const port = process.env.PORT || 3004
@@ -37,6 +38,7 @@ server.use(cors(corsOptions))
 
 server.use("/users", usersRouter)
 server.use("/projects", projectsRouter)
+server.use("/admin", adminRouter)
 
 // ---------------- ERROR HANDLERS ------------------
 server.use(badRequestHandler) // 400

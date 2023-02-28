@@ -9,7 +9,8 @@ export const jwtAuthMiddleware = async (req, res, next) => {
       const accessToken = req.headers.authorization.replace("Bearer ", "")
       const payload = await verifyAccessToken(accessToken)
       req.user = {
-        _id: payload._id
+        _id: payload._id,
+        role: payload.role
       }
       next()
     } catch (error) {

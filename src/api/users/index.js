@@ -1,5 +1,7 @@
 import express from "express"
+import mongoose from "mongoose"
 import UsersModel from "./model.js"
+import SwatchModel from "../swatches/model.js"
 import { v2 as cloudinary } from "cloudinary"
 import { CloudinaryStorage } from "multer-storage-cloudinary"
 import multer from "multer"
@@ -99,6 +101,35 @@ usersRouter.get("/me", jwtAuthMiddleware, async (req, res, next) => {
     next(error)
   }
 })
+usersRouter.post("/me/colorLibrary", jwtAuthMiddleware, async (req, res, next) => {
+  try {
+    const { paletteName, colors } = req.body
+
+    if (req.user) {
+      const foundUser = await UsersModel.findById(req.user._id)
+
+      // Check if the new username or email already exists in the database with a user that is not me
+      // const existingUser = await UsersModel.findOne({
+      //   $and: [{ _id: { $ne: foundUser._id } }, { $or: [{ username }, { email }] }]
+      // })
+      // if (existingUser) {
+      //   const existingField = existingUser.username === username ? "username" : "email"
+      //   return res.status(400).send({ message: `User with this ${existingField} already exists` })
+      // }
+
+      // Update the user with the new data and return the updated user
+      if (foundUser) {
+        foundUser.colorLibrary.push({ paletteName, colors })
+        const updatedUser = await foundUser.save()
+        res.send(updatedUser)
+      } else {
+        res.status(400).send({ message: `there was a problem` })
+      }
+    }
+  } catch (error) {
+    next(error)
+  }
+})
 
 usersRouter.put("/me", jwtAuthMiddleware, async (req, res, next) => {
   try {
@@ -125,5 +156,28 @@ usersRouter.put("/me", jwtAuthMiddleware, async (req, res, next) => {
     next(error)
   }
 })
+
+// usersRouter.post("/me/colorLibrary", jwtAuthMiddleware, async (req, res, next) => {
+//   try {
+//     const { paletteName, colors } = req.body
+//     console.log("here")
+//     console.log(req.user)
+//     const _id = mongoose.Types.ObjectId(req.user._id)
+
+//     const foundUser = await UsersModel.findById(_id).populate({
+//       path: "projects"
+//     })
+//     if (foundUser) {
+//       foundUser.colorLibrary.push({ paletteName, colors })
+//       const updatedUser = await foundUser.save()
+//       res.send(updatedUser)
+//     } else {
+//       createHttpError(404, "user not found")
+//       console.log("user not found")
+//     }
+//   } catch (error) {
+//     next(error)
+//   }
+// })
 
 export default usersRouter

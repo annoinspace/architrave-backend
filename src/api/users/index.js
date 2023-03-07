@@ -101,35 +101,6 @@ usersRouter.get("/me", jwtAuthMiddleware, async (req, res, next) => {
     next(error)
   }
 })
-usersRouter.post("/me/colorLibrary", jwtAuthMiddleware, async (req, res, next) => {
-  try {
-    const { paletteName, colors } = req.body
-
-    if (req.user) {
-      const foundUser = await UsersModel.findById(req.user._id)
-
-      // Check if the new username or email already exists in the database with a user that is not me
-      // const existingUser = await UsersModel.findOne({
-      //   $and: [{ _id: { $ne: foundUser._id } }, { $or: [{ username }, { email }] }]
-      // })
-      // if (existingUser) {
-      //   const existingField = existingUser.username === username ? "username" : "email"
-      //   return res.status(400).send({ message: `User with this ${existingField} already exists` })
-      // }
-
-      // Update the user with the new data and return the updated user
-      if (foundUser) {
-        foundUser.colorLibrary.push({ paletteName, colors })
-        const updatedUser = await foundUser.save()
-        res.send(updatedUser)
-      } else {
-        res.status(400).send({ message: `there was a problem` })
-      }
-    }
-  } catch (error) {
-    next(error)
-  }
-})
 
 usersRouter.put("/me", jwtAuthMiddleware, async (req, res, next) => {
   try {
@@ -157,27 +128,40 @@ usersRouter.put("/me", jwtAuthMiddleware, async (req, res, next) => {
   }
 })
 
-// usersRouter.post("/me/colorLibrary", jwtAuthMiddleware, async (req, res, next) => {
-//   try {
-//     const { paletteName, colors } = req.body
-//     console.log("here")
-//     console.log(req.user)
-//     const _id = mongoose.Types.ObjectId(req.user._id)
+usersRouter.post("/me/colorLibrary", jwtAuthMiddleware, async (req, res, next) => {
+  try {
+    const { paletteName, colors } = req.body
 
-//     const foundUser = await UsersModel.findById(_id).populate({
-//       path: "projects"
-//     })
-//     if (foundUser) {
-//       foundUser.colorLibrary.push({ paletteName, colors })
-//       const updatedUser = await foundUser.save()
-//       res.send(updatedUser)
-//     } else {
-//       createHttpError(404, "user not found")
-//       console.log("user not found")
-//     }
-//   } catch (error) {
-//     next(error)
-//   }
-// })
+    if (req.user) {
+      const foundUser = await UsersModel.findById(req.user._id)
+      if (foundUser) {
+        foundUser.colorLibrary.push({ paletteName, colors })
+        const updatedUser = await foundUser.save()
+        res.send(updatedUser.colorLibrary)
+      } else {
+        res.status(400).send({ message: `there was a problem` })
+      }
+    }
+  } catch (error) {
+    next(error)
+  }
+})
+usersRouter.delete("/me/colorLibrary/:paletteId", jwtAuthMiddleware, async (req, res, next) => {
+  try {
+    const paletteId = req.params.paletteId
+    if (req.user) {
+      const foundUser = await UsersModel.findById(req.user._id)
+      if (foundUser) {
+        foundUser.colorLibrary = foundUser.colorLibrary.filter((palette) => palette._id != paletteId)
+        const updatedUser = await foundUser.save()
+        res.send(updatedUser.colorLibrary)
+      } else {
+        res.status(400).send({ message: `there was a problem` })
+      }
+    }
+  } catch (error) {
+    next(error)
+  }
+})
 
 export default usersRouter

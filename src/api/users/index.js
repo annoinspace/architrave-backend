@@ -215,10 +215,11 @@ usersRouter.get("/me/products", jwtAuthMiddleware, async (req, res, next) => {
 usersRouter.post("/me/products/imageUpload", jwtAuthMiddleware, cloudinaryUploader, async (req, res, next) => {
   try {
     const imageUrl = req.file.path
+    const { name, price, link, category } = req.body
     if (req.user) {
       const foundUser = await UsersModel.findById(req.user._id)
       if (foundUser) {
-        foundUser.productLibrary.push({ image: imageUrl })
+        foundUser.productLibrary.push({ name, price, link, category, image: imageUrl })
         const updatedUser = await foundUser.save()
 
         res.status(201).send(updatedUser.productLibrary)

@@ -18,7 +18,7 @@ const cloudinaryUploader = multer({
       folder: "architrave"
     }
   })
-}).single("product")
+}).single("image")
 
 usersRouter.post("/register", async (req, res, next) => {
   try {
@@ -211,6 +211,26 @@ usersRouter.get("/me/products", jwtAuthMiddleware, async (req, res, next) => {
     next(error)
   }
 })
+
+usersRouter.post("/me/products/imageUpload", jwtAuthMiddleware, cloudinaryUploader, async (req, res, next) => {
+  try {
+    const imageUrl = req.file.path
+    if (req.user) {
+      const foundUser = await UsersModel.findById(req.user._id)
+      if (foundUser) {
+        foundUser.productLibrary.push({ image: imageUrl })
+        const updatedUser = await foundUser.save()
+
+        res.status(201).send(updatedUser.productLibrary)
+      } else {
+        res.status(400).send({ message: `there was a problem adding a new product` })
+      }
+    }
+  } catch (error) {
+    next(error)
+  }
+})
+
 usersRouter.delete("/me/products/:productId", jwtAuthMiddleware, async (req, res, next) => {
   try {
     const productId = req.params.productId

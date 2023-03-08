@@ -9,10 +9,11 @@ const colorSchema = new Schema({
 })
 
 const productSchema = new Schema({
-  name: { type: String, required: true },
-  category: { type: String, required: true },
-  link: { type: String, required: true },
-  price: { type: String, required: true }
+  name: { type: String, required: false },
+  category: { type: String, required: false },
+  link: { type: String, required: false },
+  price: { type: String, required: false },
+  image: { type: String, required: false }
 })
 const UsersSchema = new Schema({
   username: { type: String, required: true },

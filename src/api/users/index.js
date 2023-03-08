@@ -14,11 +14,10 @@ const usersRouter = express.Router()
 const cloudinaryUploader = multer({
   storage: new CloudinaryStorage({
     cloudinary,
-    params: () => {
-      return { folder: "architrave" }
+    params: {
+      folder: "architrave"
     }
-  }),
-  limits: { fileSize: 1024 * 1024 }
+  })
 }).single("product")
 
 usersRouter.post("/register", async (req, res, next) => {
@@ -167,14 +166,28 @@ usersRouter.delete("/me/colorLibrary/:paletteId", jwtAuthMiddleware, async (req,
 
 usersRouter.post("/me/products", jwtAuthMiddleware, async (req, res, next) => {
   try {
-    const { name, price, link, category } = req.body
-
+    const { name, price, link, category, image } = req.body
     if (req.user) {
       const foundUser = await UsersModel.findById(req.user._id)
       if (foundUser) {
-        foundUser.productLibrary.push({ name, price, link, category })
-        const updatedUser = await foundUser.save()
-        res.send(updatedUser.productLibrary)
+        cloudinary.uploader.upload(
+          image,
+          {
+            resource_type: "image",
+            folder: "architrave"
+          },
+          async (error, result) => {
+            if (error) {
+              console.error(error)
+              res.status(500).send({ error: "Failed to upload image" })
+            } else {
+              const imageUrl = result.secure_url
+              foundUser.productLibrary.push({ name, price, link, category, image: imageUrl })
+              const updatedUser = await foundUser.save()
+              res.send(updatedUser.productLibrary)
+            }
+          }
+        )
       } else {
         res.status(400).send({ message: `there was a problem adding a new product` })
       }
@@ -184,6 +197,20 @@ usersRouter.post("/me/products", jwtAuthMiddleware, async (req, res, next) => {
   }
 })
 
+usersRouter.get("/me/products", jwtAuthMiddleware, async (req, res, next) => {
+  try {
+    if (req.user) {
+      const foundUser = await UsersModel.findById(req.user._id)
+      if (foundUser) {
+        res.send(foundUser.productLibrary)
+      } else {
+        res.status(400).send({ message: `there was a problem getting the products` })
+      }
+    }
+  } catch (error) {
+    next(error)
+  }
+})
 usersRouter.delete("/me/products/:productId", jwtAuthMiddleware, async (req, res, next) => {
   try {
     const productId = req.params.productId

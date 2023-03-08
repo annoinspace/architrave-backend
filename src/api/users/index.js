@@ -139,13 +139,14 @@ usersRouter.post("/me/colorLibrary", jwtAuthMiddleware, async (req, res, next) =
         const updatedUser = await foundUser.save()
         res.send(updatedUser.colorLibrary)
       } else {
-        res.status(400).send({ message: `there was a problem` })
+        res.status(400).send({ message: `there was a problem creating a new palette` })
       }
     }
   } catch (error) {
     next(error)
   }
 })
+
 usersRouter.delete("/me/colorLibrary/:paletteId", jwtAuthMiddleware, async (req, res, next) => {
   try {
     const paletteId = req.params.paletteId
@@ -156,7 +157,44 @@ usersRouter.delete("/me/colorLibrary/:paletteId", jwtAuthMiddleware, async (req,
         const updatedUser = await foundUser.save()
         res.send(updatedUser.colorLibrary)
       } else {
-        res.status(400).send({ message: `there was a problem` })
+        res.status(400).send({ message: `there was a problem deleting the product` })
+      }
+    }
+  } catch (error) {
+    next(error)
+  }
+})
+
+usersRouter.post("/me/products", jwtAuthMiddleware, async (req, res, next) => {
+  try {
+    const { name, price, link, category } = req.body
+
+    if (req.user) {
+      const foundUser = await UsersModel.findById(req.user._id)
+      if (foundUser) {
+        foundUser.productLibrary.push({ name, price, link, category })
+        const updatedUser = await foundUser.save()
+        res.send(updatedUser.productLibrary)
+      } else {
+        res.status(400).send({ message: `there was a problem adding a new product` })
+      }
+    }
+  } catch (error) {
+    next(error)
+  }
+})
+
+usersRouter.delete("/me/products/:productId", jwtAuthMiddleware, async (req, res, next) => {
+  try {
+    const productId = req.params.productId
+    if (req.user) {
+      const foundUser = await UsersModel.findById(req.user._id)
+      if (foundUser) {
+        foundUser.productLibrary = foundUser.productLibrary.filter((product) => product._id != productId)
+        const updatedUser = await foundUser.save()
+        res.send(updatedUser.productLibrary)
+      } else {
+        res.status(400).send({ message: `there was a problem deleting the product` })
       }
     }
   } catch (error) {

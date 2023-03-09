@@ -8,6 +8,10 @@ const colorSchema = new Schema({
   colors: { type: [String], required: true }
 })
 
+const inspoSchema = new Schema({
+  url: { type: String, required: true }
+})
+
 const productSchema = new Schema({
   name: { type: String, required: false },
   category: { type: String, required: false },
@@ -22,6 +26,7 @@ const UsersSchema = new Schema({
   password: { type: String, required: true },
   colorLibrary: [colorSchema],
   productLibrary: [productSchema],
+  inspo: [inspoSchema],
   projects: [{ type: Schema.Types.ObjectId, ref: "Projects", required: false }],
   role: { type: String, enum: ["Guest", "Admin"], default: "Guest", required: true }
 })

@@ -20,6 +20,15 @@ const cloudinaryUploader = multer({
   })
 }).single("image")
 
+const cloudinaryUploaderMultiple = multer({
+  storage: new CloudinaryStorage({
+    cloudinary,
+    params: {
+      folder: "architrave"
+    }
+  })
+}).array("image", 5)
+
 usersRouter.post("/register", async (req, res, next) => {
   try {
     const { username, email, displayName, password, role } = req.body
@@ -157,6 +166,51 @@ usersRouter.delete("/me/colorLibrary/:paletteId", jwtAuthMiddleware, async (req,
         res.send(updatedUser.colorLibrary)
       } else {
         res.status(400).send({ message: `there was a problem deleting the product` })
+      }
+    }
+  } catch (error) {
+    next(error)
+  }
+})
+
+// usersRouter.post("/me/inspo", jwtAuthMiddleware, cloudinaryUploader, async (req, res, next) => {
+//   try {
+//     const imageUrl = req.file.path
+
+//     if (req.user) {
+//       const foundUser = await UsersModel.findById(req.user._id)
+//       if (foundUser) {
+//         foundUser.inspo.push({ image: imageUrl })
+//         const updatedUser = await foundUser.save()
+
+//         res.status(201).send(updatedUser)
+//       } else {
+//         res.status(400).send({ message: `there was a problem the inspo images` })
+//       }
+//     }
+//   } catch (error) {
+//     next(error)
+//   }
+// })
+
+usersRouter.post("/me/inspo", jwtAuthMiddleware, cloudinaryUploaderMultiple, async (req, res, next) => {
+  try {
+    console.log("req.files", req.files)
+
+    const imageUrls = req.files.map((file) => file.path)
+
+    if (req.user) {
+      const foundUser = await UsersModel.findById(req.user._id)
+      if (foundUser) {
+        const newInspo = imageUrls.map((url) => ({
+          url: url
+        }))
+        foundUser.inspo = foundUser.inspo.concat(newInspo)
+        const updatedUser = await foundUser.save()
+
+        res.status(201).send(updatedUser.inspo)
+      } else {
+        res.status(400).send({ message: `there was a problem the inspo images` })
       }
     }
   } catch (error) {

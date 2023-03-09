@@ -173,26 +173,6 @@ usersRouter.delete("/me/colorLibrary/:paletteId", jwtAuthMiddleware, async (req,
   }
 })
 
-// usersRouter.post("/me/inspo", jwtAuthMiddleware, cloudinaryUploader, async (req, res, next) => {
-//   try {
-//     const imageUrl = req.file.path
-
-//     if (req.user) {
-//       const foundUser = await UsersModel.findById(req.user._id)
-//       if (foundUser) {
-//         foundUser.inspo.push({ image: imageUrl })
-//         const updatedUser = await foundUser.save()
-
-//         res.status(201).send(updatedUser)
-//       } else {
-//         res.status(400).send({ message: `there was a problem the inspo images` })
-//       }
-//     }
-//   } catch (error) {
-//     next(error)
-//   }
-// })
-
 usersRouter.post("/me/inspo", jwtAuthMiddleware, cloudinaryUploaderMultiple, async (req, res, next) => {
   try {
     console.log("req.files", req.files)
@@ -211,6 +191,23 @@ usersRouter.post("/me/inspo", jwtAuthMiddleware, cloudinaryUploaderMultiple, asy
         res.status(201).send(updatedUser.inspo)
       } else {
         res.status(400).send({ message: `there was a problem the inspo images` })
+      }
+    }
+  } catch (error) {
+    next(error)
+  }
+})
+usersRouter.delete("/me/inspo/:inspoId", jwtAuthMiddleware, async (req, res, next) => {
+  try {
+    const inspoId = req.params.inspoId
+    if (req.user) {
+      const foundUser = await UsersModel.findById(req.user._id)
+      if (foundUser) {
+        foundUser.inspo = foundUser.inspo.filter((inspo) => inspo._id != inspoId)
+        const updatedUser = await foundUser.save()
+        res.send(updatedUser.inspo)
+      } else {
+        res.status(400).send({ message: `there was a problem deleting the inspo` })
       }
     }
   } catch (error) {

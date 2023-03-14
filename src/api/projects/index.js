@@ -3,20 +3,35 @@ import mongoose from "mongoose"
 import { jwtAuthMiddleware } from "../lib/jwtAuth.js"
 import ProjectsModel from "./model.js"
 import UsersModel from "../users/model.js"
+import { v2 as cloudinary } from "cloudinary"
+import { CloudinaryStorage } from "multer-storage-cloudinary"
+import multer from "multer"
+import createHttpError from "http-errors"
+
+const cloudinaryUploader = multer({
+  storage: new CloudinaryStorage({
+    cloudinary,
+    params: {
+      folder: "architrave"
+    }
+  })
+}).single("moodboard")
 
 const projectsRouter = express.Router()
 
 projectsRouter.post("/new", jwtAuthMiddleware, async (req, res, next) => {
   try {
     const user = await UsersModel.findById(req.user._id)
+    console.log("req.body", req.body)
 
     if (user) {
       const newProject = new ProjectsModel({ user: user._id, ...req.body })
       const savedProject = await newProject.save()
       if (savedProject) {
-        user.projects.push(newProject)
+        user.projects.push(savedProject)
         await user.save()
-        res.status(200).send(newProject)
+        console.log("---------new project created------------")
+        res.status(200).send(savedProject)
       } else {
         createHttpError(500, "Error saving project")
       }
@@ -67,22 +82,28 @@ projectsRouter.get("/:projectId", jwtAuthMiddleware, async (req, res, next) => {
   }
 })
 
-projectsRouter.put("/:projectId", jwtAuthMiddleware, async (req, res, next) => {
+projectsRouter.put("/:projectId/moodboardImage", jwtAuthMiddleware, cloudinaryUploader, async (req, res, next) => {
   try {
+    const imageUrl = req.file.path
+    console.log("---------------imageUrl---------", imageUrl)
     const user = await UsersModel.findById(req.user._id)
+    const projectId = req.params.projectId
 
-    if (user) {
-      const projectUpdated = await ProjectsModel.findByIdAndUpdate(req.params.projectId, req.body, {
-        new: true,
-        runValidators: true
-      })
+    if (projectId) {
+      console.log("---------------in the moodboard image router---------")
+      const projectUpdated = await ProjectsModel.findByIdAndUpdate(
+        req.params.projectId,
+        { moodboardImage: imageUrl, ...req.body },
+        { new: true, runValidators: true }
+      )
       if (projectUpdated) {
         res.status(200).send(projectUpdated)
+        console.log("---------------success---------")
       } else {
         res.status(404).send({ message: "error updating project" })
       }
     } else {
-      createHttpError(404, "user not found")
+      createHttpError(404, "project not found")
     }
   } catch (error) {
     next(error)

@@ -3,6 +3,11 @@ import bcrypt from "bcrypt"
 
 const { Schema, model } = mongoose
 
+const colorSchema = new Schema({
+  paletteName: { type: String, required: true },
+  colors: { type: [String], required: true }
+})
+
 const inspoSchema = new Schema({
   url: { type: String, required: true }
 })
@@ -14,13 +19,12 @@ const productSchema = new Schema({
   price: { type: String, required: false },
   image: { type: String, required: false }
 })
-
 const UsersSchema = new Schema({
   username: { type: String, required: true },
   displayName: { type: String, required: true },
   email: { type: String, required: true },
   password: { type: String, required: true },
-  colorLibrary: { type: Schema.Types.ObjectId, ref: "Colors" },
+  colorLibrary: [colorSchema],
   productLibrary: [productSchema],
   inspo: [inspoSchema],
   projects: [{ type: Schema.Types.ObjectId, ref: "Projects", required: false }],

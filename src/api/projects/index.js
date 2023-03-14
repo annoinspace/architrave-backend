@@ -34,6 +34,7 @@ projectsRouter.get("/all", jwtAuthMiddleware, async (req, res, next) => {
 
     if (user) {
       const allProjects = await ProjectsModel.find({ user: req.user._id })
+
       if (allProjects) {
         res.status(200).send(allProjects)
       } else {

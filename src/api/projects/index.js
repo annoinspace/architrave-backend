@@ -82,6 +82,49 @@ projectsRouter.get("/:projectId", jwtAuthMiddleware, async (req, res, next) => {
   }
 })
 
+projectsRouter.put("/:projectId", jwtAuthMiddleware, async (req, res, next) => {
+  try {
+    const user = await UsersModel.findById(req.user._id)
+    const { title, summary, budget, cushion } = req.body
+    const projectId = req.params.projectId
+
+    if (user) {
+      const project = await ProjectsModel.findByIdAndUpdate(
+        projectId,
+        { ...req.body },
+        { new: true, runValidators: true }
+      )
+      if (project) {
+        res.status(200).send(project)
+      } else {
+        res.status(404).send({ message: "this project does not exist" })
+      }
+    } else {
+      createHttpError(404, "user not found")
+    }
+  } catch (error) {
+    next(error)
+  }
+})
+projectsRouter.get("/:projectId/products", jwtAuthMiddleware, async (req, res, next) => {
+  try {
+    const user = await UsersModel.findById(req.user._id)
+
+    if (user) {
+      const project = await ProjectsModel.findById({ _id: req.params.projectId })
+      if (project) {
+        res.status(200).send(project.products)
+      } else {
+        res.status(404).send({ message: "this project does not exist" })
+      }
+    } else {
+      createHttpError(404, "user not found")
+    }
+  } catch (error) {
+    next(error)
+  }
+})
+
 projectsRouter.put("/:projectId/moodboardImage", jwtAuthMiddleware, cloudinaryUploader, async (req, res, next) => {
   try {
     const imageUrl = req.file.path

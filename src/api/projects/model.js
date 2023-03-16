@@ -6,7 +6,8 @@ const productSchema = new Schema({
   category: { type: String, required: false },
   link: { type: String, required: false },
   price: { type: String, required: false },
-  image: { type: String, required: false }
+  image: { type: String, required: false },
+  quantity: { type: Number, required: false, default: 1 }
 })
 
 const moodboardSchema = new Schema({
@@ -30,7 +31,7 @@ const ProjectsSchema = new Schema(
     description: { type: String, required: false },
     currency: { type: String, required: true },
     budget: { type: Number, required: true },
-    cushion: { type: Number, required: true },
+    cushion: { type: Number, required: true, default: 0 },
     status: { type: String, required: true, enum: ["Planning", "In Progress", "Complete"], default: "Planning" },
     products: [productSchema],
     palette: colorSchema,
@@ -41,28 +42,3 @@ const ProjectsSchema = new Schema(
 )
 
 export default model("Projects", ProjectsSchema)
-
-// projectsRouter.put("/:projectId/moodboardImage", jwtAuthMiddleware, cloudinaryUploader, async (req, res, next) => {
-//   try {
-//     const imageUrl = req.file.path
-//     const user = await UsersModel.findById(req.user._id)
-//     const projectId = req.params.projectId
-
-//     if (projectId) {
-//       const projectUpdated = await ProjectsModel.findByIdAndUpdate(
-//         req.params.projectId,
-//         { moodboardImage: imageUrl, ...req.body },
-//         { new: true, runValidators: true }
-//       )
-//       if (projectUpdated) {
-//         res.status(200).send(projectUpdated)
-//       } else {
-//         res.status(404).send({ message: "error updating project" })
-//       }
-//     } else {
-//       createHttpError(404, "project not found")
-//     }
-//   } catch (error) {
-//     next(error)
-//   }
-// })

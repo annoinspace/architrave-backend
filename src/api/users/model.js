@@ -24,6 +24,7 @@ const UsersSchema = new Schema({
   displayName: { type: String, required: true },
   email: { type: String, required: true },
   password: { type: String, required: true },
+  currency: { type: String, required: false },
   colorLibrary: [colorSchema],
   productLibrary: [productSchema],
   inspo: [inspoSchema],
@@ -53,8 +54,22 @@ UsersSchema.methods.toJson = function () {
   return user
 }
 
-UsersSchema.static("checkCredentials", async function (email, password) {
+UsersSchema.static("checkCredentialsEmail", async function (email, password) {
   const user = await this.findOne({ email })
+
+  if (user) {
+    const passwordMatch = await bcrypt.compare(password, user.password)
+    if (passwordMatch) {
+      return user
+    } else {
+      return null
+    }
+  } else {
+    return null
+  }
+})
+UsersSchema.static("checkCredentialsUsername", async function (username, password) {
+  const user = await this.findOne({ username })
 
   if (user) {
     const passwordMatch = await bcrypt.compare(password, user.password)

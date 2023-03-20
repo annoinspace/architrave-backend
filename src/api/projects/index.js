@@ -125,6 +125,83 @@ projectsRouter.get("/:projectId/products", jwtAuthMiddleware, async (req, res, n
   }
 })
 
+projectsRouter.get("/:projectId/products/:productId", jwtAuthMiddleware, async (req, res, next) => {
+  try {
+    const user = await UsersModel.findById(req.user._id)
+
+    if (user) {
+      const project = await ProjectsModel.findById(req.params.projectId)
+      if (project) {
+        const product = project.products.find((product) => product._id == req.params.productId)
+        if (product) {
+          res.status(200).send(product)
+        } else {
+          res.status(404).send({ message: "This product does not exist in the project" })
+        }
+      } else {
+        res.status(404).send({ message: "This project does not exist" })
+      }
+    } else {
+      createHttpError(404, "User not found")
+    }
+  } catch (error) {
+    next(error)
+  }
+})
+
+projectsRouter.put("/:projectId/products/:productId", jwtAuthMiddleware, async (req, res, next) => {
+  try {
+    const user = await UsersModel.findById(req.user._id)
+    const { quantity } = req.body
+
+    if (user) {
+      const project = await ProjectsModel.findById(req.params.projectId)
+      if (project) {
+        const product = project.products.find((product) => product._id == req.params.productId)
+        if (product) {
+          product.quantity = quantity
+          await project.save()
+          res.status(200).send({ message: "Product quantity updated successfully", updatedProducts: project.products })
+        } else {
+          res.status(404).send({ message: "This product does not exist in the project" })
+        }
+      } else {
+        res.status(404).send({ message: "This project does not exist" })
+      }
+    } else {
+      createHttpError(404, "User not found")
+    }
+  } catch (error) {
+    next(error)
+  }
+})
+
+projectsRouter.delete("/:projectId/products/:productId", jwtAuthMiddleware, async (req, res, next) => {
+  try {
+    const user = await UsersModel.findById(req.user._id)
+
+    if (user) {
+      const project = await ProjectsModel.findById(req.params.projectId)
+      if (project) {
+        const productIndex = project.products.findIndex((product) => product._id == req.params.productId)
+        if (productIndex !== -1) {
+          project.products.splice(productIndex, 1)
+          await ProjectsModel.findByIdAndUpdate(req.params.projectId, { products: project.products })
+          res.status(200).send({ message: "Product deleted successfully", remainingProducts: project.products })
+        } else {
+          res.status(404).send({ message: "This product does not exist in the project" })
+        }
+      } else {
+        res.status(404).send({ message: "This project does not exist" })
+      }
+    } else {
+      createHttpError(404, "User not found")
+    }
+  } catch (error) {
+    next(error)
+  }
+})
+
 projectsRouter.put("/:projectId/moodboardImage", jwtAuthMiddleware, cloudinaryUploader, async (req, res, next) => {
   try {
     const imageUrl = req.file.path

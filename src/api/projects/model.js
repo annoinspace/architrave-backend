@@ -32,7 +32,7 @@ const ProjectsSchema = new Schema(
     currency: { type: String, required: true },
     budget: { type: Number, required: true },
     cushion: { type: Number, required: true, default: 0 },
-    status: { type: String, required: true, enum: ["Planning", "In Progress", "Complete"], default: "Planning" },
+    status: { type: String, required: true, enum: ["Planning", "Complete"], default: "Planning" },
     products: [productSchema],
     palette: colorSchema,
     moodboardImage: { type: String, required: false },

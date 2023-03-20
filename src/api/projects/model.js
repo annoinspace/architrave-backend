@@ -29,7 +29,6 @@ const ProjectsSchema = new Schema(
     title: { type: String, required: true },
     summary: { type: String, required: true },
     description: { type: String, required: false },
-    currency: { type: String, required: true },
     budget: { type: Number, required: true },
     cushion: { type: Number, required: true, default: 0 },
     status: { type: String, required: true, enum: ["Planning", "Complete"], default: "Planning" },

@@ -106,6 +106,7 @@ projectsRouter.put("/:projectId", jwtAuthMiddleware, async (req, res, next) => {
     next(error)
   }
 })
+
 projectsRouter.get("/:projectId/products", jwtAuthMiddleware, async (req, res, next) => {
   try {
     const user = await UsersModel.findById(req.user._id)
@@ -114,6 +115,32 @@ projectsRouter.get("/:projectId/products", jwtAuthMiddleware, async (req, res, n
       const project = await ProjectsModel.findById({ _id: req.params.projectId })
       if (project) {
         res.status(200).send(project.products)
+      } else {
+        res.status(404).send({ message: "this project does not exist" })
+      }
+    } else {
+      createHttpError(404, "user not found")
+    }
+  } catch (error) {
+    next(error)
+  }
+})
+
+projectsRouter.put("/:projectId/products", jwtAuthMiddleware, async (req, res, next) => {
+  const { productId } = req.body
+  try {
+    const user = await UsersModel.findById(req.user._id)
+
+    if (user) {
+      const project = await ProjectsModel.findById({ _id: req.params.projectId })
+      if (project) {
+        const product = user.productLibrary.find((product) => product._id == productId)
+        if (product) {
+          console.log(product)
+          project.products.push(product)
+          await project.save()
+          res.status(200).send(project)
+        }
       } else {
         res.status(404).send({ message: "this project does not exist" })
       }

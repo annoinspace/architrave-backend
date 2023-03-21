@@ -126,8 +126,9 @@ projectsRouter.get("/:projectId/products", jwtAuthMiddleware, async (req, res, n
   }
 })
 
-projectsRouter.put("/:projectId/products", jwtAuthMiddleware, async (req, res, next) => {
+projectsRouter.patch("/:projectId/products", jwtAuthMiddleware, async (req, res, next) => {
   const { productId } = req.body
+  console.log("here")
   try {
     const user = await UsersModel.findById(req.user._id)
 
@@ -136,10 +137,11 @@ projectsRouter.put("/:projectId/products", jwtAuthMiddleware, async (req, res, n
       if (project) {
         const product = user.productLibrary.find((product) => product._id == productId)
         if (product) {
-          console.log(product)
           project.products.push(product)
           await project.save()
           res.status(200).send(project)
+        } else {
+          next(createHttpError(404, "Product not found"))
         }
       } else {
         res.status(404).send({ message: "this project does not exist" })
@@ -151,6 +153,34 @@ projectsRouter.put("/:projectId/products", jwtAuthMiddleware, async (req, res, n
     next(error)
   }
 })
+// projectsRouter.put("/:projectId/products", jwtAuthMiddleware, async (req, res, next) => {
+//   const { productIds } = req.body
+//   console.log("productIds", productIds)
+//   try {
+//     const user = await UsersModel.findById(req.user._id)
+
+//     if (user) {
+//       const project = await ProjectsModel.findById({ _id: req.params.projectId })
+//       if (project) {
+//         const foundProducts = await productIds.forEach((productId) =>
+//           user.productLibrary.find((product) => product._id == productId)
+//         )
+//         console.log("foundProducts", foundProducts)
+//         if (product) {
+//           project.products.push(product)
+//           await project.save()
+//           res.status(200).send(project)
+//         }
+//       } else {
+//         res.status(404).send({ message: "this project does not exist" })
+//       }
+//     } else {
+//       createHttpError(404, "user not found")
+//     }
+//   } catch (error) {
+//     next(error)
+//   }
+// })
 
 projectsRouter.get("/:projectId/products/:productId", jwtAuthMiddleware, async (req, res, next) => {
   try {

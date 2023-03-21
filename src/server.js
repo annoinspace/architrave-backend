@@ -18,22 +18,18 @@ const port = process.env.PORT || 3004
 
 // ---------------- WHITELIST FOR CORS ------------------
 
-// const whitelist = [process.env.FE_DEV_URL, process.env.FE_PROD_URL]
-
-// const corsOptions = {
-//   origin: (origin, corsNext) => {
-//     console.log("-----CURRENT ORIGIN -----", origin)
-//     if (!origin || whitelist.indexOf(origin) !== -1) {
-//       corsNext(null, true)
-//     } else {
-//       corsNext(createHttpError(400, `Origin ${origin} is not in the whitelist!`))
-//     }
-//   }
-// }
+const corsOptions = {
+  cors: {
+    origin: process.env.FE_URL || process.env.FE_PROD_URL,
+    // origin: "*",
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
+    allowedHeaders: ["Content-Type", "Authorization"]
+  }
+}
 
 server.use(express.json())
 // server.use(cors(corsOptions))
-server.use(cors())
+server.use(cors(corsOptions))
 
 // ---------------- ENDPOINTS ------------------
 

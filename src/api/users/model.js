@@ -29,12 +29,13 @@ const UsersSchema = new Schema({
   productLibrary: [productSchema],
   inspo: [inspoSchema],
   projects: [{ type: Schema.Types.ObjectId, ref: "Projects", required: false }],
-  role: { type: String, enum: ["Guest", "Admin"], default: "Guest", required: true }
+  role: { type: String, enum: ["Guest", "Admin"], default: "Guest", required: true },
+  tokenVersion: { type: Number, default: 0 }
 })
 
 UsersSchema.pre("save", async function (next) {
   const currentUser = this
-  if (currentUser.isModified("password")) {
+  if (currentUser.isModified("password") && currentUser.password !== "") {
     const plainPW = currentUser.password
     const hash = await bcrypt.hash(plainPW, 11)
     currentUser.password = hash
@@ -56,18 +57,27 @@ UsersSchema.methods.toJson = function () {
 
 UsersSchema.static("checkCredentialsEmail", async function (email, password) {
   const user = await this.findOne({ email })
+  console.log("user found", user)
+  console.log("user found password", user.password)
+  console.log("password in request", password, typeof password)
 
   if (user) {
     const passwordMatch = await bcrypt.compare(password, user.password)
+    console.log("passwordmatch", passwordMatch)
     if (passwordMatch) {
       return user
     } else {
+      console.log("Password mismatch for email:", email)
+      console.log("Stored password hash:", user.password)
+      console.log("Password entered:", password)
       return null
     }
   } else {
+    console.log("No user found with email:", email)
     return null
   }
 })
+
 UsersSchema.static("checkCredentialsUsername", async function (username, password) {
   const user = await this.findOne({ username })
 

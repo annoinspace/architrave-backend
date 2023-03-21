@@ -1,4 +1,5 @@
 import express from "express"
+import bcrypt from "bcrypt"
 import mongoose from "mongoose"
 import UsersModel from "./model.js"
 import SwatchModel from "../swatches/model.js"
@@ -51,13 +52,17 @@ usersRouter.post("/register", async (req, res, next) => {
 usersRouter.post("/login", async (req, res, next) => {
   try {
     const { email, username, password } = req.body
+    console.log("req.body", req.body)
     let user = null
+    console.log("user first")
     if (email) {
       user = await UsersModel.checkCredentialsEmail(email, password)
+      console.log("user email", user)
     } else if (username) {
       user = await UsersModel.checkCredentialsUsername(username, password)
+      console.log("user password", user)
     }
-
+    console.log("user second")
     if (user) {
       const payload = { _id: user._id, role: user.role }
       const accessToken = await createAccessToken(payload)
@@ -114,26 +119,175 @@ usersRouter.get("/me", jwtAuthMiddleware, async (req, res, next) => {
   }
 })
 
-usersRouter.put("/me", jwtAuthMiddleware, async (req, res, next) => {
+usersRouter.put("/me/username", jwtAuthMiddleware, async (req, res, next) => {
   try {
-    const { username, email } = req.body
+    const { username } = req.body
 
     if (req.user) {
       const foundUser = await UsersModel.findById(req.user._id)
 
-      // Check if the new username or email already exists in the database with a user that is not me
+      // Check if the new username already exists in the database with a user that is not me
       const existingUser = await UsersModel.findOne({
-        $and: [{ _id: { $ne: foundUser._id } }, { $or: [{ username }, { email }] }]
+        $and: [{ _id: { $ne: foundUser._id } }, { username }]
       })
       if (existingUser) {
-        const existingField = existingUser.username === username ? "username" : "email"
-        return res.status(400).send({ message: `User with this ${existingField} already exists` })
+        return res.status(400).send({ message: `User with this username already exists` })
       }
 
       // Update the user with the new data and return the updated user
       foundUser.set(req.body)
       const updatedUser = await foundUser.save()
-      res.send(updatedUser)
+      const { username: updatedEmail } = updatedUser
+      res.send({ username: updatedEmail })
+    }
+  } catch (error) {
+    next(error)
+  }
+})
+
+usersRouter.put("/me/email", jwtAuthMiddleware, async (req, res, next) => {
+  try {
+    const { email } = req.body
+
+    if (req.user) {
+      const foundUser = await UsersModel.findById(req.user._id)
+
+      // Check if the new email already exists in the database with a user that is not me
+      const existingUser = await UsersModel.findOne({
+        $and: [{ _id: { $ne: foundUser._id } }, { email }]
+      })
+      if (existingUser) {
+        return res.status(400).send({ message: `User with this email already exists` })
+      }
+
+      // Update the user with the new data and return the updated user
+      foundUser.set(req.body)
+      const updatedUser = await foundUser.save()
+      const { email: updatedEmail } = updatedUser
+      res.send({ email: updatedEmail })
+    }
+  } catch (error) {
+    next(error)
+  }
+})
+
+usersRouter.put("/me/currency", jwtAuthMiddleware, async (req, res, next) => {
+  try {
+    const { currency } = req.body
+
+    if (req.user) {
+      const foundUser = await UsersModel.findById(req.user._id)
+
+      // Update the user with the new data and return the updated user
+      foundUser.set(req.body)
+      const updatedUser = await foundUser.save()
+      const { currency: updatedCurrency } = updatedUser
+      res.send({ currency: updatedCurrency })
+    }
+  } catch (error) {
+    next(error)
+  }
+})
+// "password": "$2b$11$lKNZTyvjXTTsfg5tsuJhHeBraJrT8UTqZybYlOHcBdrboyNezIqNK",
+// usersRouter.put("/me/newpassword", jwtAuthMiddleware, async (req, res, next) => {
+//   try {
+//     const { email, currentPassword, newPassword } = req.body
+
+//     let user = await UsersModel.findById(req.user._id)
+
+//     if (user) {
+//       const userWithCurrentMatchPassword = await UsersModel.checkCredentialsEmail(email, currentPassword)
+//       console.log("userWithCurrentMatchPassword", userWithCurrentMatchPassword)
+
+//       if (userWithCurrentMatchPassword) {
+//         const hashedNewPassword = await bcrypt.hash(newPassword, 11)
+//         user.password = hashedNewPassword
+//         user.tokenVersion += 1
+//         await user.save()
+//         const accessToken = await createAccessToken({ _id: user._id, role: user.role, tokenVersion: user.tokenVersion })
+
+//         user = await UsersModel.findByIdAndUpdate(user._id, { tokenVersion: user.tokenVersion }, { new: true })
+
+//         res.send({ message: "Password updated successfully", accessToken })
+//       } else {
+//         next(createHttpError(401, "current password is incorrect"))
+//       }
+//     } else {
+//       next(createHttpError(401, "Invalid email or password"))
+//     }
+//   } catch (error) {
+//     next(error)
+//   }
+// })
+// usersRouter.put("/me/newpassword", jwtAuthMiddleware, async (req, res, next) => {
+//   try {
+//     const { email, currentPassword, newPassword } = req.body
+
+//     let user = await UsersModel.findById(req.user._id)
+
+//     if (user) {
+//       const userWithCurrentMatchPassword = await UsersModel.checkCredentialsEmail(email, currentPassword)
+//       console.log("userWithCurrentMatchPassword", userWithCurrentMatchPassword)
+
+//       if (userWithCurrentMatchPassword) {
+//         user.password = newPassword // Remove the manual hashing
+//         user.tokenVersion += 1
+//         await user.save()
+
+//         const accessToken = await createAccessToken({ _id: user._id, role: user.role, tokenVersion: user.tokenVersion })
+
+//         user = await UsersModel.findByIdAndUpdate(user._id, { tokenVersion: user.tokenVersion }, { new: true })
+
+//         res.send({ message: "Password updated successfully", accessToken })
+//       } else {
+//         next(createHttpError(401, "current password is incorrect"))
+//       }
+//     } else {
+//       next(createHttpError(401, "Invalid email or password"))
+//     }
+//   } catch (error) {
+//     next(error)
+//   }
+// })
+
+async function updateUserPassword(user, newPassword) {
+  console.log("updateUserPassword - newPassword:", newPassword)
+
+  const hashedNewPassword = await bcrypt.hash(newPassword, 11)
+  console.log("updateUserPassword - hashedNewPassword:", hashedNewPassword)
+
+  await UsersModel.updateOne(
+    { _id: user._id },
+    {
+      $set: {
+        password: hashedNewPassword,
+        tokenVersion: user.tokenVersion + 1
+      }
+    }
+  )
+}
+
+usersRouter.put("/me/newpassword", jwtAuthMiddleware, async (req, res, next) => {
+  try {
+    const { email, currentPassword, newPassword } = req.body
+
+    const user = await UsersModel.findById(req.user._id)
+
+    if (user) {
+      const userWithCurrentMatchPassword = await UsersModel.checkCredentialsEmail(email, currentPassword)
+      console.log("userWithCurrentMatchPassword", userWithCurrentMatchPassword)
+
+      if (userWithCurrentMatchPassword) {
+        await updateUserPassword(user, newPassword)
+
+        const accessToken = await createAccessToken({ _id: user._id, role: user.role, tokenVersion: user.tokenVersion })
+
+        res.send({ message: "Password updated successfully", accessToken })
+      } else {
+        next(createHttpError(401, "current password is incorrect"))
+      }
+    } else {
+      next(createHttpError(401, "Invalid email or password"))
     }
   } catch (error) {
     next(error)

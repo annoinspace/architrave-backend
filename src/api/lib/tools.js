@@ -20,3 +20,20 @@ export const verifyAccessToken = (token) =>
       else resolve(originalPayload)
     })
   )
+
+export const updateUserPassword = async (user, newPassword) => {
+  console.log("updateUserPassword - newPassword:", newPassword)
+
+  const hashedNewPassword = await bcrypt.hash(newPassword, 11)
+  console.log("updateUserPassword - hashedNewPassword:", hashedNewPassword)
+
+  await UsersModel.updateOne(
+    { _id: user._id },
+    {
+      $set: {
+        password: hashedNewPassword,
+        tokenVersion: user.tokenVersion + 1
+      }
+    }
+  )
+}

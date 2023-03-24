@@ -57,9 +57,9 @@ UsersSchema.methods.toJson = function () {
 
 UsersSchema.static("checkCredentialsEmail", async function (email, password) {
   const user = await this.findOne({ email })
-  console.log("user found", user)
-  console.log("user found password", user.password)
-  console.log("password in request", password, typeof password)
+  // console.log("user found", user)
+  // console.log("user found password", user.password)
+  // console.log("password in request", password, typeof password)
 
   if (user) {
     const passwordMatch = await bcrypt.compare(password, user.password)
@@ -67,9 +67,9 @@ UsersSchema.static("checkCredentialsEmail", async function (email, password) {
     if (passwordMatch) {
       return user
     } else {
-      console.log("Password mismatch for email:", email)
-      console.log("Stored password hash:", user.password)
-      console.log("Password entered:", password)
+      // console.log("Password mismatch for email:", email)
+      // console.log("Stored password hash:", user.password)
+      // console.log("Password entered:", password)
       return null
     }
   } else {

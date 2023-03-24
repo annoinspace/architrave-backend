@@ -6,7 +6,7 @@ import SwatchModel from "../swatches/model.js"
 import { v2 as cloudinary } from "cloudinary"
 import { CloudinaryStorage } from "multer-storage-cloudinary"
 import multer from "multer"
-import { createAccessToken } from "../lib/tools.js"
+import { createAccessToken, updateUserPassword } from "../lib/tools.js"
 import { jwtAuthMiddleware } from "../lib/jwtAuth.js"
 import createHttpError from "http-errors"
 
@@ -188,84 +188,23 @@ usersRouter.put("/me/currency", jwtAuthMiddleware, async (req, res, next) => {
     next(error)
   }
 })
-// "password": "$2b$11$lKNZTyvjXTTsfg5tsuJhHeBraJrT8UTqZybYlOHcBdrboyNezIqNK",
-// usersRouter.put("/me/newpassword", jwtAuthMiddleware, async (req, res, next) => {
-//   try {
-//     const { email, currentPassword, newPassword } = req.body
 
-//     let user = await UsersModel.findById(req.user._id)
+// async function updateUserPassword(user, newPassword) {
+//   console.log("updateUserPassword - newPassword:", newPassword)
 
-//     if (user) {
-//       const userWithCurrentMatchPassword = await UsersModel.checkCredentialsEmail(email, currentPassword)
-//       console.log("userWithCurrentMatchPassword", userWithCurrentMatchPassword)
+//   const hashedNewPassword = await bcrypt.hash(newPassword, 11)
+//   console.log("updateUserPassword - hashedNewPassword:", hashedNewPassword)
 
-//       if (userWithCurrentMatchPassword) {
-//         const hashedNewPassword = await bcrypt.hash(newPassword, 11)
-//         user.password = hashedNewPassword
-//         user.tokenVersion += 1
-//         await user.save()
-//         const accessToken = await createAccessToken({ _id: user._id, role: user.role, tokenVersion: user.tokenVersion })
-
-//         user = await UsersModel.findByIdAndUpdate(user._id, { tokenVersion: user.tokenVersion }, { new: true })
-
-//         res.send({ message: "Password updated successfully", accessToken })
-//       } else {
-//         next(createHttpError(401, "current password is incorrect"))
+//   await UsersModel.updateOne(
+//     { _id: user._id },
+//     {
+//       $set: {
+//         password: hashedNewPassword,
+//         tokenVersion: user.tokenVersion + 1
 //       }
-//     } else {
-//       next(createHttpError(401, "Invalid email or password"))
 //     }
-//   } catch (error) {
-//     next(error)
-//   }
-// })
-// usersRouter.put("/me/newpassword", jwtAuthMiddleware, async (req, res, next) => {
-//   try {
-//     const { email, currentPassword, newPassword } = req.body
-
-//     let user = await UsersModel.findById(req.user._id)
-
-//     if (user) {
-//       const userWithCurrentMatchPassword = await UsersModel.checkCredentialsEmail(email, currentPassword)
-//       console.log("userWithCurrentMatchPassword", userWithCurrentMatchPassword)
-
-//       if (userWithCurrentMatchPassword) {
-//         user.password = newPassword // Remove the manual hashing
-//         user.tokenVersion += 1
-//         await user.save()
-
-//         const accessToken = await createAccessToken({ _id: user._id, role: user.role, tokenVersion: user.tokenVersion })
-
-//         user = await UsersModel.findByIdAndUpdate(user._id, { tokenVersion: user.tokenVersion }, { new: true })
-
-//         res.send({ message: "Password updated successfully", accessToken })
-//       } else {
-//         next(createHttpError(401, "current password is incorrect"))
-//       }
-//     } else {
-//       next(createHttpError(401, "Invalid email or password"))
-//     }
-//   } catch (error) {
-//     next(error)
-//   }
-// })
-
-async function updateUserPassword(user, newPassword) {
-  console.log("updateUserPassword - newPassword:", newPassword)
-
-  const hashedNewPassword = await bcrypt.hash(newPassword, 11)
-  console.log("updateUserPassword - hashedNewPassword:", hashedNewPassword)
-
-  await UsersModel.updateOne(
-    { _id: user._id },
-    {
-      $set: {
-        password: hashedNewPassword,
-        tokenVersion: user.tokenVersion + 1
-      }
-    }
-  )
-}
+//   )
+// }
 
 usersRouter.put("/me/newpassword", jwtAuthMiddleware, async (req, res, next) => {
   try {

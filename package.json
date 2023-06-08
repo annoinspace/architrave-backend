@@ -2,7 +2,7 @@
   "name": "architrave-backend",
   "version": "1.0.0",
   "description": "A design tool for planning and budgeting of Interior Design Projects. Backend Code.",
-  "main": "server.js",
+  "main": "index.js",
   "type": "module",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
